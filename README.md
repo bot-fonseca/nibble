@@ -1,13 +1,13 @@
-# Nibble 🦦
+# Nibble
 
-A calorie, macro and hydration tracker with a pet otter that reacts to how you eat and drink. Inspired by BitePal, with its own mascot and design.
+A calorie, macro and hydration tracker with a pet red panda that reacts to how you eat and drink. Inspired by BitePal, with its own mascot and design.
 
 Built with **Expo SDK 58** (React Native + TypeScript), so the same code runs on Android and iOS. All data is stored locally on the phone.
 
 ## What's in it
 
 **Onboarding (up to 20 steps)**
-- Animated welcome: the otter pops out of the water with a splash
+- Animated welcome: the red panda pops out of the water with a splash
 - Name, goal, sex, age / height / weight rulers, target weight (kept at BMI ≥ 18.5), pace with estimated goal date
 - Activity level, diet, obstacles + tailored tips, a "small habits add up" interstitial
 - Hydration habit, daily water goal (auto-calculated, adjustable), glass size

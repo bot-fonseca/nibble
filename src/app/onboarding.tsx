@@ -76,7 +76,7 @@ const OBSTACLES = [
   { key: 'water', label: 'Forgetting to drink water', emoji: '💧', tip: 'Gentle reminders until you hit your goal.' },
 ];
 
-const PET_NAMES = ['Ollie', 'Pebble', 'Mochi', 'Biscuit', 'Bubbles', 'Noodle'];
+const PET_NAMES = ['Momo', 'Maple', 'Ember', 'Mochi', 'Biscuit', 'Noodle'];
 
 export default function Onboarding() {
   const insets = useSafeAreaInsets();
@@ -106,7 +106,7 @@ export default function Onboarding() {
     endHour: 21,
     everyMinutes: 120,
   });
-  const [petName, setPetName] = useState('Ollie');
+  const [petName, setPetName] = useState('Momo');
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
 
@@ -167,7 +167,7 @@ export default function Onboarding() {
     finish({
       profile: { ...profile, name: profile.name.trim() },
       plan,
-      petName: petName.trim() || 'Ollie',
+      petName: petName.trim() || 'Momo',
       glassMl,
       reminders,
     });
@@ -318,11 +318,11 @@ export default function Onboarding() {
           profile.goal === 'gain'
             ? [
                 [0.25, 'Slow & lean', '🐢', '0.25 kg per week'],
-                [0.5, 'Steady', '🦦', '0.5 kg per week · recommended'],
+                [0.5, 'Steady', '🐾', '0.5 kg per week · recommended'],
               ]
             : [
                 [0.25, 'Slow & steady', '🐢', '0.25 kg per week'],
-                [0.5, 'Balanced', '🦦', '0.5 kg per week · recommended'],
+                [0.5, 'Balanced', '🐾', '0.5 kg per week · recommended'],
                 [0.75, 'Ambitious', '🐇', '0.75 kg per week'],
                 [1, 'Fast', '🐆', '1 kg per week · harder to keep up'],
               ];
@@ -538,7 +538,7 @@ export default function Onboarding() {
         return (
           <PlanReady
             name={profile.name.trim()}
-            petName={petName.trim() || 'Ollie'}
+            petName={petName.trim() || 'Momo'}
             plan={plan}
             profile={profile}
             onStart={complete}
@@ -650,7 +650,7 @@ function Welcome({ onStart }: { onStart: () => void }) {
             Eat well, drink up,{'\n'}keep your pal happy
           </T>
           <T size={17} color={colors.inkSoft} center style={{ marginTop: 12 }}>
-            Track calories, macros and water with a little otter who’s rooting for you.
+            Track calories, macros and water with a little red panda who’s rooting for you.
           </T>
         </Animated.View>
       </View>

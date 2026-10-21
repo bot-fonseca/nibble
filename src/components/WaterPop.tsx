@@ -17,7 +17,7 @@ import { type Mood, Pet } from './Pet';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
-/** The otter pops up out of a pool of water, with a splash. */
+/** The red panda pops up out of a pool of water, with a splash. */
 export function WaterPop({
   size = 200,
   mood = 'happy',

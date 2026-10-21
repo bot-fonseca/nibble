@@ -69,7 +69,7 @@ const initial = {
   onboarded: false,
   profile: null,
   plan: null,
-  petName: 'Ollie',
+  petName: 'Momo',
   glassMl: 250,
   reminders: { enabled: true, startHour: 9, endHour: 21, everyMinutes: 120 },
   meals: [] as Meal[],
