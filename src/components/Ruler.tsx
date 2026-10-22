@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { colors } from '../theme';
+import { colors, themed } from '../theme';
 import { T, tap } from './ui';
 
 const TICK = 12;
@@ -137,7 +137,7 @@ export function Ruler({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   valueRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', marginBottom: 8 },
   rulerWrap: { height: HEIGHT },
   label: { position: 'absolute', top: 20, left: -19, width: 40, alignItems: 'center' },
@@ -161,4 +161,4 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: colors.bg,
   },
-});
+}));

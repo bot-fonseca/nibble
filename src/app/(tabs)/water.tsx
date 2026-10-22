@@ -9,7 +9,7 @@ import { WaterGlass } from '../../components/WaterGlass';
 import { addDays, dayKey, formatLitres, formatTime, WEEKDAY_SHORT } from '../../lib/dates';
 import { reminderSlots } from '../../lib/notifications';
 import { useApp, useDayTotals, waterOn } from '../../store';
-import { colors, fonts, radius } from '../../theme';
+import { colors, fonts, radius, themed } from '../../theme';
 
 /** How many of today's drinks to show before "Show all". */
 const LOG_PREVIEW = 3;
@@ -155,7 +155,7 @@ export default function Water() {
                 <View style={styles.barTrack}>
                   <Animated.View
                     entering={enter(3)}
-                    style={{ height: `${Math.max(4, h * 100)}%`, width: '100%', borderRadius: 10, backgroundColor: hit ? colors.water : '#9CCBFF' }}
+                    style={{ height: `${Math.max(4, h * 100)}%`, width: '100%', borderRadius: 10, backgroundColor: hit ? colors.water : colors.waterBarSoft }}
                   />
                 </View>
                 <T size={11.5} weight={i === 6 ? 'black' : 'semibold'} color={i === 6 ? colors.ink : colors.inkFaint}>
@@ -239,7 +239,7 @@ export default function Water() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   hero: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.card },
   glassLabel: { position: 'absolute', top: '42%', alignItems: 'center' },
   goalRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
@@ -297,4 +297,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

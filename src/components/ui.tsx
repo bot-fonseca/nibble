@@ -19,7 +19,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { colors, fonts, radius, shadow } from '../theme';
+import { colors, fonts, radius, shadow, themed } from '../theme';
 
 /** Calm entrance for screen sections: a short fade, lightly staggered by position. */
 export const enter = (i = 0) => FadeIn.duration(260).delay(i * 40);
@@ -232,7 +232,7 @@ export function Bar({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   btn: {
     height: 58,
     borderRadius: radius.pill,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
   },
   radioDot: { width: 14, height: 14, borderRadius: 7, backgroundColor: colors.primary },
   card: {
@@ -289,4 +289,4 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     backgroundColor: colors.card,
   },
-});
+}));

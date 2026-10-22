@@ -9,7 +9,7 @@ import { Button, Card, Chip, enter, T } from '../../components/ui';
 import { formatLitres } from '../../lib/dates';
 import { requestNotificationPermission } from '../../lib/notifications';
 import { useApp } from '../../store';
-import { colors, fonts, radius } from '../../theme';
+import { colors, fonts, radius, THEMES, themed } from '../../theme';
 
 const GOAL_LABEL = { lose: 'Lose weight', maintain: 'Maintain weight', gain: 'Gain weight', healthy: 'Eat healthier' };
 
@@ -21,7 +21,9 @@ export default function Settings() {
   const petName = useApp((s) => s.petName);
   const glassMl = useApp((s) => s.glassMl);
   const reminders = useApp((s) => s.reminders);
-  const { setCalorieGoal, setWaterGoal, setGlass, setReminders, renamePet, reset } = useApp.getState();
+  const theme = useApp((s) => s.theme);
+  const ownedThemes = useApp((s) => s.ownedThemes);
+  const { setCalorieGoal, setWaterGoal, setGlass, setReminders, renamePet, reset, setTheme } = useApp.getState();
   const [pet, setPet] = useState(petName);
 
   const confirmReset = () => {
@@ -113,6 +115,17 @@ export default function Settings() {
         />
       </Section>
 
+      <Section title="Theme">
+        <Card style={{ gap: 12 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {THEMES.filter((th) => ownedThemes.includes(th.id)).map((th) => (
+              <Chip key={th.id} label={th.name} selected={theme === th.id} onPress={() => setTheme(th.id)} />
+            ))}
+          </View>
+          <Button title="Get more themes 🎋" variant="soft" onPress={() => router.push('/shop')} />
+        </Card>
+      </Section>
+
       <Button title="Start over" variant="ghost" onPress={confirmReset} style={{ marginTop: 8 }} />
       <T size={12} color={colors.inkFaint} center>
         All data stays on this device. Estimates are for general wellness, not medical advice.
@@ -141,7 +154,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   input: {
     height: 46,
     borderRadius: radius.sm,
@@ -151,4 +164,4 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: colors.ink,
   },
-});
+}));

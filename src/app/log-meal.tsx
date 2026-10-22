@@ -8,7 +8,7 @@ import { Button, Card, Chip, enter, Squish, T, tap } from '../components/ui';
 import { dayKey } from '../lib/dates';
 import { defaultMealType, MEAL_TYPES, QUICK_FOODS, type QuickFood } from '../lib/foods';
 import { type MealType, useApp } from '../store';
-import { colors, fonts, radius } from '../theme';
+import { colors, fonts, radius, themed } from '../theme';
 
 export default function LogMeal() {
   const insets = useSafeAreaInsets();
@@ -88,7 +88,7 @@ export default function LogMeal() {
               </T>
             </View>
             <View style={styles.soon}>
-              <T weight="black" size={11} color={colors.calories}>
+              <T weight="black" size={11} color={colors.primary}>
                 SOON
               </T>
             </View>
@@ -132,7 +132,7 @@ export default function LogMeal() {
                         {f.portion} · P {f.protein} · C {f.carbs} · F {f.fat}
                       </T>
                     </View>
-                    <T weight="black" size={15} color={colors.calories}>
+                    <T weight="black" size={15} color={colors.primaryDark}>
                       {f.kcal}
                     </T>
                     <Ionicons name="add-circle" size={26} color={colors.primary} />
@@ -200,7 +200,7 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scan: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.calories },
+  scan: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.primary },
   scanIcon: {
     width: 50,
     height: 50,
@@ -258,4 +258,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.ink,
   },
-});
+}));

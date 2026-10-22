@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Switch, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import type { Reminders } from '../store';
-import { colors } from '../theme';
+import { colors, themed } from '../theme';
 import { Card, Chip, Squish, T } from './ui';
 
 const hh = (h: number) => `${String(h).padStart(2, '0')}:00`;
@@ -76,7 +76,7 @@ export function MiniStepper({ label, onMinus, onPlus }: { label: string; onMinus
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   miniBtn: {
@@ -87,4 +87,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

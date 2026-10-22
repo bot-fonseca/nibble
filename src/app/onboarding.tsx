@@ -43,7 +43,7 @@ import {
   suggestedWaterMl,
 } from '../lib/plan';
 import { type Reminders, useApp } from '../store';
-import { colors, fonts, radius } from '../theme';
+import { colors, fonts, radius, themed } from '../theme';
 
 type StepKey =
   | 'welcome'
@@ -892,7 +892,7 @@ function PlanReady({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   topBar: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 18, paddingVertical: 6 },
   back: {
@@ -943,4 +943,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

@@ -4,11 +4,12 @@ import type { BottomTabBarProps } from 'expo-router/tabs';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Squish, T } from '../../components/ui';
-import { colors, shadow } from '../../theme';
+import { colors, shadow, themed } from '../../theme';
 
 const TABS: Record<string, { label: string; icon: keyof typeof Ionicons.glyphMap; active: keyof typeof Ionicons.glyphMap }> = {
   index: { label: 'Home', icon: 'home-outline', active: 'home' },
   water: { label: 'Water', icon: 'water-outline', active: 'water' },
+  goals: { label: 'Goals', icon: 'trophy-outline', active: 'trophy' },
   settings: { label: 'You', icon: 'person-outline', active: 'person' },
 };
 
@@ -49,7 +50,10 @@ function TabBar({ state, navigateToTab }: BottomTabBarProps) {
             <Ionicons name="add" size={32} color={colors.white} />
           </View>
         </Squish>
-        <View style={styles.side}>{items[2]}</View>
+        <View style={styles.side}>
+          {items[2]}
+          {items[3]}
+        </View>
       </View>
     </View>
   );
@@ -60,12 +64,13 @@ export default function TabsLayout() {
     <Tabs tabBar={(p) => <TabBar {...p} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.bg } }}>
       <Tabs.Screen name="index" />
       <Tabs.Screen name="water" />
+      <Tabs.Screen name="goals" />
       <Tabs.Screen name="settings" />
     </Tabs>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => StyleSheet.create({
   wrap: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16 },
   bar: {
     flexDirection: 'row',
@@ -96,4 +101,4 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
-});
+}));

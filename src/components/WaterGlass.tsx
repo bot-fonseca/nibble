@@ -10,7 +10,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Circle, ClipPath, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, { Circle, ClipPath, Defs, Ellipse, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { colors } from '../theme';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -18,16 +18,16 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 // x position (0–1 of the glass width), radius, rise duration, start delay
 const BUBBLES: [number, number, number, number][] = [
-  [0.32, 2.5, 3200, 0],
+  [0.36, 2.5, 3200, 0],
   [0.55, 1.8, 2600, 900],
-  [0.68, 3, 3800, 1700],
-  [0.44, 1.5, 2400, 2300],
-  [0.6, 2.2, 3000, 400],
+  [0.64, 3, 3800, 1700],
+  [0.45, 1.5, 2400, 2300],
+  [0.58, 2.2, 3000, 400],
 ];
 
 /**
- * A glass that fills with layered, rolling waves as `progress` goes from 0 to 1.
- * Sloshes side to side whenever the level goes up.
+ * A round drinking glass, drawn with a 3D rim and a thick base, that fills with layered,
+ * rolling waves as `progress` goes from 0 to 1. Sloshes side to side whenever the level goes up.
  */
 export function WaterGlass({ width = 150, progress }: { width?: number; progress: number }) {
   const height = width * 1.35;
@@ -51,20 +51,43 @@ export function WaterGlass({ width = 150, progress }: { width?: number; progress
     prev.current = p;
   }, [progress]);
 
-  const inset = width * 0.08;
-  const top = height * 0.06;
-  const glass = `M${inset} ${top} L${width - inset} ${top} L${width - inset * 2.2} ${height - 14} Q${width - inset * 2.2} ${height - 2} ${width - inset * 2.2 - 12} ${height - 2} L${inset * 2.2 + 12} ${height - 2} Q${inset * 2.2} ${height - 2} ${inset * 2.2} ${height - 14} Z`;
-  const amp = width * 0.03;
+  // glass geometry: a slightly tapered cylinder seen from a little above
+  const cx = width / 2;
+  const topW = width * 0.42; // half-width at the rim
+  const botW = width * 0.32; // half-width at the base
+  const rimRy = width * 0.07;
+  const baseRy = width * 0.05;
+  const topY = rimRy + 2;
+  const botY = height * 0.9;
+  const baseH = height * 0.07; // thick glass bottom
+  // the water spans from just under the rim down to the top of the base
+  const waterTop = topY + rimRy * 0.5;
+  const waterBottom = botY - baseH;
+  const amp = width * 0.028;
+  const detailed = width >= 100;
+
+  const xAt = (y: number) => {
+    'worklet';
+    // half-width of the glass at height y (linear taper)
+    return topW + (botW - topW) * ((y - topY) / (botY - topY));
+  };
+
+  const inside = `M${cx - topW} ${topY} L${cx - botW} ${botY} A${botW} ${baseRy} 0 0 0 ${cx + botW} ${botY} L${cx + topW} ${topY} Z`;
+  const rimBack = `M${cx - topW} ${topY} A${topW} ${rimRy} 0 0 1 ${cx + topW} ${topY}`;
+  const rimFront = `M${cx - topW} ${topY} A${topW} ${rimRy} 0 0 0 ${cx + topW} ${topY}`;
+  const sides = `M${cx - topW} ${topY} L${cx - botW} ${botY} A${botW} ${baseRy} 0 0 0 ${cx + botW} ${botY} L${cx + topW} ${topY}`;
+  const baseTopY = waterBottom;
+  const baseTop = `M${cx - xAt(baseTopY)} ${baseTopY} A${xAt(baseTopY)} ${baseRy} 0 0 0 ${cx + xAt(baseTopY)} ${baseTopY}`;
 
   // y of the water surface at x: two mixed sines plus the slosh tilt
   const surface = (x: number, lvl: number, ph: number, dir: number, a: number, off: number, tl: number) => {
     'worklet';
-    const fillTop = top + (height - top) * (1 - lvl);
+    const fillTop = waterTop + (waterBottom - waterTop) * (1 - lvl);
     // flatten when empty or full so the wave doesn't poke out of the glass
     const edge = Math.min(1, lvl * 12, (1 - lvl) * 12);
     const u = (x / width) * Math.PI * 2;
     const wave = a * Math.sin(u * 1.1 + dir * ph + off) + a * 0.45 * Math.sin(u * 2.3 - dir * ph * 2 + off * 1.7);
-    return fillTop + (wave + tl * width * 0.09 * (x / width - 0.5)) * edge;
+    return fillTop + (wave + tl * width * 0.08 * (x / width - 0.5)) * edge;
   };
 
   const body = (lvl: number, ph: number, dir: number, a: number, off: number, tl: number) => {
@@ -80,28 +103,42 @@ export function WaterGlass({ width = 150, progress }: { width?: number; progress
   const frontProps = useAnimatedProps(() => ({ d: body(level.value, front.value, 1, amp, 0, tilt.value) }));
   const shineProps = useAnimatedProps(() => {
     let d = '';
-    for (let x = width * 0.12; x <= width * 0.88; x += 4) {
+    for (let x = cx - topW * 0.7; x <= cx + topW * 0.7; x += 4) {
       d += `${d ? ' L' : 'M'}${x} ${surface(x, level.value, front.value, 1, amp, 0, tilt.value) + 2}`;
     }
     return { d, opacity: level.value > 0.02 && level.value < 0.98 ? 0.55 : 0 };
   });
 
+  const outline = colors.waterBarSoft;
+
   return (
     <Svg width={width} height={height}>
       <Defs>
         <ClipPath id="glass">
-          <Path d={glass} />
+          <Path d={inside} />
         </ClipPath>
         <LinearGradient id="water" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor={colors.water} />
           <Stop offset="1" stopColor={colors.waterDeep} />
         </LinearGradient>
+        <LinearGradient id="glassTint" x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor="#fff" stopOpacity={0.35} />
+          <Stop offset="0.5" stopColor="#fff" stopOpacity={0} />
+          <Stop offset="1" stopColor="#fff" stopOpacity={0.2} />
+        </LinearGradient>
       </Defs>
-      <Path d={glass} fill={colors.waterSoft} />
+
+      {/* shadow on the table */}
+      <Ellipse cx={cx} cy={botY + baseRy + height * 0.035} rx={botW * 1.1} ry={baseRy * 0.9} fill="#000" opacity={0.08} />
+
+      {/* empty glass and the back of the rim */}
+      <Path d={inside} fill={colors.waterSoft} />
+      <Path d={rimBack} fill="none" stroke={outline} strokeWidth={2.5} />
+
       <G clipPath="url(#glass)">
         <AnimatedPath animatedProps={backProps} fill="#8CC5FF" />
         <AnimatedPath animatedProps={frontProps} fill="url(#water)" />
-        {width >= 100 &&
+        {detailed &&
           BUBBLES.map(([x, r, duration, delay], i) => (
             <Bubble
               key={i}
@@ -109,16 +146,37 @@ export function WaterGlass({ width = 150, progress }: { width?: number; progress
               r={r * (width / 150)}
               duration={duration}
               delay={delay}
-              bottom={height - 8}
-              top={top}
-              height={height}
+              bottom={waterBottom - 4}
+              top={waterTop}
               level={level}
             />
           ))}
         <AnimatedPath animatedProps={shineProps} fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" />
-        <Rect x={inset + 10} y={top + 14} width={8} height={height * 0.5} rx={4} fill="#fff" opacity={0.35} />
+
+        {/* thick glass base the water sits on */}
+        <Rect x={0} y={baseTopY} width={width} height={height - baseTopY} fill={colors.waterSoft} />
+        <Rect x={0} y={baseTopY} width={width} height={height - baseTopY} fill="#fff" opacity={0.35} />
+        <Path d={baseTop} fill="none" stroke={outline} strokeWidth={1.5} opacity={0.8} />
+
+        {/* curved glass sheen and reflections */}
+        <Path d={inside} fill="url(#glassTint)" />
+        <Rect x={cx - topW + width * 0.07} y={topY + rimRy + 6} width={width * 0.05} height={(botY - topY) * 0.55} rx={width * 0.025} fill="#fff" opacity={0.45} />
+        <Rect x={cx + topW - width * 0.12} y={topY + rimRy + 14} width={width * 0.025} height={(botY - topY) * 0.3} rx={width * 0.0125} fill="#fff" opacity={0.3} />
       </G>
-      <Path d={glass} fill="none" stroke="#B9DBFF" strokeWidth={3} />
+
+      {/* measuring marks at ¼, ½ and ¾ */}
+      {detailed &&
+        [0.25, 0.5, 0.75].map((f) => {
+          const y = waterTop + (waterBottom - waterTop) * (1 - f);
+          const xr = cx + xAt(y);
+          return (
+            <Line key={f} x1={xr - width * (f === 0.5 ? 0.1 : 0.06)} x2={xr - 4} y1={y} y2={y} stroke="#fff" strokeWidth={2} strokeLinecap="round" opacity={0.6} />
+          );
+        })}
+
+      {/* glass walls and the front of the rim */}
+      <Path d={sides} fill="none" stroke={outline} strokeWidth={3} strokeLinejoin="round" />
+      <Path d={rimFront} fill="none" stroke={outline} strokeWidth={3} />
     </Svg>
   );
 }
@@ -130,7 +188,6 @@ function Bubble({
   delay,
   bottom,
   top,
-  height,
   level,
 }: {
   x: number;
@@ -139,7 +196,6 @@ function Bubble({
   delay: number;
   bottom: number;
   top: number;
-  height: number;
   level: SharedValue<number>;
 }) {
   const t = useSharedValue(0);
@@ -147,7 +203,7 @@ function Bubble({
     t.value = withDelay(delay, withRepeat(withTiming(1, { duration, easing: Easing.in(Easing.quad) }), -1, false));
   }, []);
   const props = useAnimatedProps(() => {
-    const fillTop = top + (height - top) * (1 - level.value);
+    const fillTop = top + (bottom + 4 - top) * (1 - level.value);
     const cy = bottom - t.value * (bottom - fillTop);
     // pop just before reaching the surface; hidden while the glass is (nearly) empty
     const visible = level.value > 0.08 && cy > fillTop + r * 2;

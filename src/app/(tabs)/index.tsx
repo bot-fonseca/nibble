@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   FadeIn,
@@ -17,11 +17,12 @@ import { Pet } from '../../components/Pet';
 import { Ring } from '../../components/Ring';
 import { Bar, Card, enter, Squish, T, tap } from '../../components/ui';
 import { WaterGlass } from '../../components/WaterGlass';
-import { addDays, dayKey, formatLitres, fromKey, greeting, prettyDate, WEEKDAY_SHORT, weekOf } from '../../lib/dates';
+import { dayKey, formatLitres, fromKey, greeting, prettyDate, WEEKDAY_SHORT, weekOf } from '../../lib/dates';
 import { MEAL_TYPES } from '../../lib/foods';
-import { goalsMet, petLine, petMood } from '../../lib/mood';
+import { petLine, petMood } from '../../lib/mood';
+import { useStreak } from '../../lib/streak';
 import { type Meal, useApp, useDayTotals } from '../../store';
-import { colors, radius } from '../../theme';
+import { colors, radius, themed } from '../../theme';
 
 export default function Home() {
   const insets = useSafeAreaInsets();
@@ -31,7 +32,6 @@ export default function Home() {
   const petName = useApp((s) => s.petName);
   const glassMl = useApp((s) => s.glassMl);
   const allMeals = useApp((s) => s.meals);
-  const allWater = useApp((s) => s.water);
   const addWater = useApp((s) => s.addWater);
   const removeMeal = useApp((s) => s.removeMeal);
 
@@ -56,29 +56,8 @@ export default function Home() {
     mealCount.current = { day, n: t.meals.length };
   }, [t.meals.length, day]);
 
-  // consecutive days with both goals hit; today only counts once it's reached, so an
-  // unfinished today doesn't break a streak that ran through yesterday
-  const kcalGoal = plan?.calories ?? 0;
-  const waterGoal = plan?.waterMl ?? 0;
-  const streak = useMemo(() => {
-    if (!kcalGoal || !waterGoal) return 0;
-    const kcal = new Map<string, number>();
-    const water = new Map<string, number>();
-    for (const m of allMeals) kcal.set(m.day, (kcal.get(m.day) ?? 0) + m.kcal);
-    for (const w of allWater) water.set(w.day, (water.get(w.day) ?? 0) + w.ml);
-    const won = (d: Date) => {
-      const k = dayKey(d);
-      return goalsMet(kcal.get(k) ?? 0, kcalGoal, water.get(k) ?? 0, waterGoal);
-    };
-    let n = 0;
-    let d = new Date();
-    if (!won(d)) d = addDays(d, -1);
-    while (won(d)) {
-      n++;
-      d = addDays(d, -1);
-    }
-    return n;
-  }, [allMeals, allWater, kcalGoal, waterGoal]);
+  const { current: streak, todayWon } = useStreak();
+  const bamboo = useApp((s) => s.bamboo);
 
   // plan is cleared by "Start over" while this tab is still mounted
   if (!plan) return null;
@@ -120,12 +99,20 @@ export default function Home() {
               {name ? `${name} 👋` : 'Welcome back 👋'}
             </T>
           </View>
-          <View style={styles.streak}>
-            <T size={18}>🔥</T>
+          <Squish onPress={() => router.push('/shop')} scaleTo={0.92} style={styles.streak}>
+            <T size={16}>🎋</T>
+            <T weight="black" size={16} color={colors.primaryDark}>
+              {bamboo}
+            </T>
+          </Squish>
+          <Squish onPress={() => router.push('/streak')} scaleTo={0.92} style={styles.streak}>
+            <T size={18} style={{ opacity: todayWon || streak === 0 ? 1 : 0.55 }}>
+              🔥
+            </T>
             <T weight="black" size={16} color={colors.calories}>
               {streak}
             </T>
-          </View>
+          </Squish>
         </Animated.View>
 
         <WeekStrip selected={day} onSelect={setDay} calorieGoal={plan.calories} meals={allMeals} />
@@ -133,7 +120,7 @@ export default function Home() {
         {/* pet hero */}
         <Animated.View entering={enter(2)}>
           <LinearGradient
-            colors={mood === 'thirsty' ? ['#DCEEFF', '#BFE0FF'] : mood === 'sleepy' ? ['#ECE8FF', '#DAD3FF'] : ['#FFE9CF', '#FFD9B0']}
+            colors={mood === 'thirsty' ? colors.heroWater : mood === 'sleepy' ? colors.heroSleepy : colors.heroWarm}
             style={styles.hero}
           >
             <View style={{ flex: 1, gap: 8 }}>
@@ -392,8 +379,8 @@ function FloatUp({ text }: { text: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+const styles = themed(() => StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   streak: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -422,7 +409,7 @@ const styles = StyleSheet.create({
     minHeight: 168,
   },
   bubble: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.bubble,
     borderRadius: 18,
     borderBottomRightRadius: 4,
     paddingHorizontal: 14,
@@ -468,4 +455,4 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
-});
+}));
