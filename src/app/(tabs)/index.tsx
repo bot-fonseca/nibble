@@ -30,7 +30,7 @@ export default function Home() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const profile = useApp((s) => s.profile);
-  const plan = useApp((s) => s.plan)!;
+  const plan = useApp((s) => s.plan);
   const petName = useApp((s) => s.petName);
   const glassMl = useApp((s) => s.glassMl);
   const allMeals = useApp((s) => s.meals);
@@ -59,16 +59,6 @@ export default function Home() {
     mealCount.current = { day, n: t.meals.length };
   }, [t.meals.length, day]);
 
-  const mood = petMood({
-    hour: new Date().getHours(),
-    kcal: t.kcal,
-    kcalGoal: plan.calories,
-    waterMl: t.waterMl,
-    waterGoal: plan.waterMl,
-    mealsCount: t.meals.length,
-    isToday,
-  });
-
   const streak = useMemo(() => {
     const active = new Set([...allMeals.map((m) => m.day), ...allWater.map((w) => w.day)]);
     let n = 0;
@@ -80,6 +70,19 @@ export default function Home() {
     }
     return n;
   }, [allMeals, allWater]);
+
+  // plan is cleared by "Start over" while this tab is still mounted
+  if (!plan) return null;
+
+  const mood = petMood({
+    hour: new Date().getHours(),
+    kcal: t.kcal,
+    kcalGoal: plan.calories,
+    waterMl: t.waterMl,
+    waterGoal: plan.waterMl,
+    mealsCount: t.meals.length,
+    isToday,
+  });
 
   const drink = (ml: number) => {
     addWater(ml, day);

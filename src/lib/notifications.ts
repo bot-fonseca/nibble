@@ -1,11 +1,18 @@
-import * as Notifications from 'expo-notifications';
+import { isRunningInExpoGo } from 'expo';
 import { Platform } from 'react-native';
 import type { Reminders } from '../store';
+
+// expo-notifications crashes on import in Expo Go on Android (its push modules
+// were removed there), so only load it where it works. Reminders are a no-op otherwise.
+const Notifications: typeof import('expo-notifications') | null =
+  Platform.OS === 'web' || (Platform.OS === 'android' && isRunningInExpoGo())
+    ? null
+    : require('expo-notifications');
 
 const CHANNEL = 'hydration';
 const DAYS_AHEAD = 7; // keeps us under iOS's 64 pending-notification cap
 
-Notifications.setNotificationHandler({
+Notifications?.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
     shouldShowList: true,
@@ -15,7 +22,7 @@ Notifications.setNotificationHandler({
 });
 
 async function ensureChannel() {
-  if (Platform.OS !== 'android') return;
+  if (!Notifications || Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(CHANNEL, {
     name: 'Hydration reminders',
     importance: Notifications.AndroidImportance.HIGH,
@@ -25,7 +32,7 @@ async function ensureChannel() {
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  if (!Notifications) return false;
   await ensureChannel(); // Android 13+ only prompts once a channel exists
   const current = await Notifications.getPermissionsAsync();
   if (current.granted) return true;
@@ -60,7 +67,7 @@ export async function scheduleHydrationReminders(opts: {
   goalMl: number;
   todayMl: number;
 }) {
-  if (Platform.OS === 'web') return;
+  if (!Notifications) return;
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
     if (!opts.reminders.enabled) return;

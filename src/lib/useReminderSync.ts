@@ -15,12 +15,17 @@ export function useReminderSync() {
   const goal = useApp((s) => s.plan?.waterMl ?? 2000);
   const water = useApp((s) => s.water);
   const [today, setToday] = useState(dayKey());
+  // bumped on every foreground, so we re-plan after the permission prompt closes
+  // or after notifications get enabled in the system settings
+  const [foregrounds, setForegrounds] = useState(0);
   const todayMl = waterOn(water, today);
   const reached = todayMl >= goal;
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (st) => {
-      if (st === 'active') setToday(dayKey());
+      if (st !== 'active') return;
+      setToday(dayKey());
+      setForegrounds((n) => n + 1);
     });
     return () => sub.remove();
   }, []);
@@ -32,5 +37,5 @@ export function useReminderSync() {
     }, 800);
     return () => clearTimeout(t);
     // only re-plan when crossing the goal, not on every sip
-  }, [onboarded, reminders, petName, goal, reached, today]);
+  }, [onboarded, reminders, petName, goal, reached, today, foregrounds]);
 }
