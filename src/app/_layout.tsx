@@ -10,6 +10,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated';
 import { useReminderSync } from '../lib/useReminderSync';
 import { useApp } from '../store';
 import { colors } from '../theme';
@@ -32,6 +33,9 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
+      {/* Reanimated treats Android's "transition animation scale = 0" (a common speed tweak) as
+          reduce-motion and freezes everything; the pet and water are core to the app, so always animate */}
+      <ReducedMotionConfig mode={ReduceMotion.Never} />
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
         <Stack.Protected guard={onboarded} redirectTo="/onboarding">

@@ -1,5 +1,11 @@
 import type { Mood } from '../components/Pet';
 
+/** A day counts as a win when water is at goal and calories land within 80–110% of target. */
+export function goalsMet(kcal: number, kcalGoal: number, waterMl: number, waterGoal: number): boolean {
+  const food = kcal / kcalGoal;
+  return waterMl >= waterGoal && food >= 0.8 && food <= 1.1;
+}
+
 export function petMood(opts: {
   hour: number;
   kcal: number;
@@ -14,7 +20,7 @@ export function petMood(opts: {
   const food = kcal / kcalGoal;
   if (!isToday) return water >= 1 && food >= 0.8 ? 'happy' : 'content';
   const expected = Math.min(1, Math.max(0, (hour - 8) / 13));
-  if (water >= 1 && food >= 0.8 && food <= 1.1) return 'excited';
+  if (goalsMet(kcal, kcalGoal, waterMl, waterGoal)) return 'excited';
   if (hour >= 23 || hour < 6) return 'sleepy';
   if (water < expected - 0.25) return 'thirsty';
   if ((mealsCount === 0 && hour >= 10) || food < expected - 0.4) return 'hungry';

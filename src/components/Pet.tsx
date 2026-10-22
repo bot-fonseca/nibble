@@ -51,11 +51,11 @@ export function Pet({ size = 180, mood = 'content', bounceKey = 0, style, idle =
 
   useEffect(() => {
     if (!idle) return;
-    breath.value = withRepeat(withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.sin) }), -1, true);
-    tail.value = withRepeat(withTiming(1, { duration: 1300, easing: Easing.inOut(Easing.quad) }), -1, true);
+    breath.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.sin) }), -1, true);
+    tail.value = withRepeat(withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.sin) }), -1, true);
     blink.value = withRepeat(
       withSequence(
-        withDelay(2600, withTiming(0.1, { duration: 90 })),
+        withDelay(4200, withTiming(0.1, { duration: 90 })),
         withTiming(1, { duration: 120 }),
         withDelay(180, withTiming(0.1, { duration: 80 })),
         withTiming(1, { duration: 110 }),
@@ -67,27 +67,27 @@ export function Pet({ size = 180, mood = 'content', bounceKey = 0, style, idle =
   useEffect(() => {
     if (!bounceKey) return;
     squash.value = withSequence(
-      withTiming(0.86, { duration: 110 }),
-      withSpring(1, { damping: 6, stiffness: 260 }),
+      withTiming(0.95, { duration: 120 }),
+      withSpring(1, { damping: 14, stiffness: 200 }),
     );
     jump.value = withSequence(
-      withDelay(90, withTiming(-size * 0.22, { duration: 220, easing: Easing.out(Easing.quad) })),
-      withSpring(0, { damping: 8, stiffness: 180 }),
+      withDelay(90, withTiming(-size * 0.08, { duration: 200, easing: Easing.out(Easing.quad) })),
+      withSpring(0, { damping: 16, stiffness: 180 }),
     );
   }, [bounceKey]);
 
   const bodyStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateY: jump.value + breath.value * -3 },
-      { scaleY: squash.value * (1 + breath.value * 0.018) },
-      { scaleX: (2 - squash.value) * (1 - breath.value * 0.01) },
+      { translateY: jump.value + breath.value * -1.5 },
+      { scaleY: squash.value * (1 + breath.value * 0.01) },
+      { scaleX: (2 - squash.value) * (1 - breath.value * 0.006) },
     ],
   }));
 
   const sleepy = mood === 'sleepy';
   const eyeProps = useAnimatedProps(() => ({ ry: 8 * (sleepy ? 0.12 : blink.value) }));
   const glintProps = useAnimatedProps(() => ({ opacity: blink.value > 0.6 && !sleepy ? 1 : 0 }));
-  const tailProps = useAnimatedProps(() => ({ rotation: -7 + tail.value * 14, originX: 136, originY: 178 }));
+  const tailProps = useAnimatedProps(() => ({ rotation: -4 + tail.value * 8, originX: 136, originY: 178 }));
 
   const happyEyes = mood === 'excited' || mood === 'happy';
 

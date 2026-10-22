@@ -1,15 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import Animated, { FadeInDown, FadeInUp, FadeOut, LinearTransition, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Pet } from '../../components/Pet';
-import { Card, Squish, T, tap } from '../../components/ui';
+import { Card, enter, Squish, T, tap } from '../../components/ui';
 import { WaterGlass } from '../../components/WaterGlass';
 import { addDays, dayKey, formatLitres, formatTime, WEEKDAY_SHORT } from '../../lib/dates';
 import { reminderSlots } from '../../lib/notifications';
 import { useApp, useDayTotals, waterOn } from '../../store';
 import { colors, fonts, radius } from '../../theme';
+
+/** How many of today's drinks to show before "Show all". */
+const LOG_PREVIEW = 3;
 
 export default function Water() {
   const insets = useSafeAreaInsets();
@@ -25,6 +28,7 @@ export default function Water() {
   const t = useDayTotals(today);
   const [custom, setCustom] = useState('');
   const [bounce, setBounce] = useState(0);
+  const [showAll, setShowAll] = useState(false);
 
   const pct = Math.round((t.waterMl / goal) * 100);
   const reached = t.waterMl >= goal;
@@ -53,7 +57,7 @@ export default function Water() {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <Animated.View entering={FadeInDown}>
+      <Animated.View entering={enter(0)}>
         <T weight="black" size={28}>
           Hydration
         </T>
@@ -62,7 +66,7 @@ export default function Water() {
         </T>
       </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(80).springify().damping(14)}>
+      <Animated.View entering={enter(1)}>
         <Card style={styles.hero}>
           <View style={{ alignItems: 'center' }}>
             <WaterGlass width={170} progress={t.waterMl / goal} />
@@ -95,7 +99,7 @@ export default function Water() {
         </Card>
       </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(140).springify().damping(14)} style={styles.quickRow}>
+      <Animated.View entering={enter(2)} style={styles.quickRow}>
         {[
           { ml: glassMl, label: 'Glass', icon: '🥛' },
           { ml: 500, label: 'Bottle', icon: '🧴' },
@@ -150,7 +154,7 @@ export default function Water() {
               <View key={i} style={{ flex: 1, alignItems: 'center', gap: 6 }}>
                 <View style={styles.barTrack}>
                   <Animated.View
-                    entering={FadeInUp.delay(i * 70)}
+                    entering={enter(3)}
                     style={{ height: `${Math.max(4, h * 100)}%`, width: '100%', borderRadius: 10, backgroundColor: hit ? colors.water : '#9CCBFF' }}
                   />
                 </View>
@@ -183,16 +187,29 @@ export default function Water() {
       </Card>
 
       {/* log */}
-      <View style={{ gap: 8 }}>
-        <T weight="black" size={20}>
-          Today
-        </T>
+      <Animated.View layout={LinearTransition} style={{ gap: 8 }}>
+        <View style={styles.logHeader}>
+          <T weight="black" size={20}>
+            Today
+          </T>
+          {t.waterEntries.length > 0 && (
+            <T size={13} weight="semibold" color={colors.inkSoft}>
+              {t.waterEntries.length} drink{t.waterEntries.length > 1 ? 's' : ''} · {formatLitres(t.waterMl)}
+            </T>
+          )}
+        </View>
         {t.waterEntries.length === 0 ? (
           <T color={colors.inkSoft}>No water logged yet. Your first glass makes {petName} smile.</T>
         ) : (
-          t.waterEntries.map((w) => (
-            <Animated.View key={w.id} entering={ZoomIn.springify()} exiting={FadeOut} layout={LinearTransition}>
-              <Card style={styles.entry}>
+          <Card style={{ paddingVertical: 6, paddingHorizontal: 14 }}>
+            {(showAll ? t.waterEntries : t.waterEntries.slice(0, LOG_PREVIEW)).map((w, i) => (
+              <Animated.View
+                key={w.id}
+                entering={FadeIn.duration(200)}
+                exiting={FadeOut.duration(150)}
+                layout={LinearTransition}
+                style={[styles.entry, i > 0 && styles.entryDivider]}
+              >
                 <View style={styles.drop}>
                   <Ionicons name="water" size={18} color={colors.water} />
                 </View>
@@ -205,11 +222,19 @@ export default function Water() {
                 <Squish onPress={() => removeWater(w.id)} style={{ padding: 4 }}>
                   <Ionicons name="trash-outline" size={18} color={colors.inkFaint} />
                 </Squish>
-              </Card>
-            </Animated.View>
-          ))
+              </Animated.View>
+            ))}
+            {t.waterEntries.length > LOG_PREVIEW && (
+              <Squish onPress={() => setShowAll((v) => !v)} style={styles.showAll}>
+                <T weight="bold" size={14} color={colors.waterDeep}>
+                  {showAll ? 'Show less' : `Show all ${t.waterEntries.length}`}
+                </T>
+                <Ionicons name={showAll ? 'chevron-up' : 'chevron-down'} size={16} color={colors.waterDeep} />
+              </Squish>
+            )}
+          </Card>
         )}
-      </View>
+      </Animated.View>
     </ScrollView>
   );
 }
@@ -252,7 +277,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
   },
-  entry: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 },
+  logHeader: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  entry: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
+  entryDivider: { borderTopWidth: 1, borderTopColor: colors.line },
+  showAll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
   drop: {
     width: 36,
     height: 36,

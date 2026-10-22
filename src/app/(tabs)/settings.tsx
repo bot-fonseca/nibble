@@ -1,11 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Pet } from '../../components/Pet';
 import { MiniStepper, RemindersEditor } from '../../components/RemindersEditor';
-import { Button, Card, Chip, T } from '../../components/ui';
+import { Button, Card, Chip, enter, T } from '../../components/ui';
 import { formatLitres } from '../../lib/dates';
 import { requestNotificationPermission } from '../../lib/notifications';
 import { useApp } from '../../store';
@@ -45,7 +45,7 @@ export default function Settings() {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <Animated.View entering={FadeInDown}>
+      <Animated.View entering={enter(0)}>
         <T weight="black" size={28}>
           {profile.name || 'You'}
         </T>
@@ -55,7 +55,7 @@ export default function Settings() {
         </T>
       </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(60)}>
+      <Animated.View entering={enter(1)}>
         <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
           <Pet size={80} mood="happy" />
           <View style={{ flex: 1, gap: 6 }}>

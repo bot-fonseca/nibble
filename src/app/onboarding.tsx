@@ -254,14 +254,14 @@ export default function Onboarding() {
 
       case 'age':
         return (
-          <Question title="How old are you?" sub="Metabolism slows a little every decade.">
+          <Question title="How old are you?" sub="Metabolism slows a little every decade." center>
             <Ruler min={18} max={90} value={profile.age} onChange={(v) => set('age', v)} unit="years" />
           </Question>
         );
 
       case 'height':
         return (
-          <Question title="How tall are you?">
+          <Question title="How tall are you?" center>
             <Ruler min={130} max={220} value={profile.heightCm} onChange={(v) => set('heightCm', v)} unit="cm" />
           </Question>
         );
@@ -269,7 +269,7 @@ export default function Onboarding() {
       case 'weight': {
         const b = bmi(profile.weightKg, profile.heightCm);
         return (
-          <Question title="What’s your current weight?" sub="Don’t worry, this stays on your phone.">
+          <Question title="What’s your current weight?" sub="Don’t worry, this stays on your phone." center>
             <Ruler
               min={35}
               max={200}
@@ -293,7 +293,7 @@ export default function Onboarding() {
         const lose = profile.goal === 'lose';
         const diff = Math.abs(profile.targetKg - profile.weightKg);
         return (
-          <Question title="What’s your target weight?" sub={lose ? `We keep targets in a healthy range (min ${min} kg for your height).` : undefined}>
+          <Question title="What’s your target weight?" sub={lose ? `We keep targets in a healthy range (min ${min} kg for your height).` : undefined} center>
             <Ruler
               key={`${profile.goal}-${min}`}
               min={lose ? min : profile.weightKg + 0.5}
@@ -557,14 +557,14 @@ export default function Onboarding() {
       ]}
     >
       {!chromeless && (
-        <View style={styles.topBar}>
+        <Animated.View entering={FadeIn.duration(300)} style={styles.topBar}>
           <Squish onPress={() => go(-1)} style={styles.back}>
             <Ionicons name="chevron-back" size={22} color={colors.ink} />
           </Squish>
           <View style={{ flex: 1 }}>
             <Bar value={progress} color={colors.primary} height={8} />
           </View>
-        </View>
+        </Animated.View>
       )}
 
       <View style={{ flex: 1 }}>
@@ -600,10 +600,21 @@ export default function Onboarding() {
 
 /* ---------- step building blocks ---------- */
 
-function Question({ title, sub, children }: { title: string; sub?: string; children: ReactNode }) {
+function Question({
+  title,
+  sub,
+  center,
+  children,
+}: {
+  title: string;
+  sub?: string;
+  /** Vertically centre the content in the space below the title (used by the rulers). */
+  center?: boolean;
+  children: ReactNode;
+}) {
   return (
     <ScrollView
-      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 18, paddingBottom: 24, gap: 12 }}
+      contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 22, paddingTop: 18, paddingBottom: 24, gap: 12 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
@@ -618,7 +629,7 @@ function Question({ title, sub, children }: { title: string; sub?: string; child
         ) : null}
       </Animated.View>
       <View style={{ height: 8 }} />
-      {children}
+      {center ? <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 40 }}>{children}</View> : children}
     </ScrollView>
   );
 }

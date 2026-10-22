@@ -5,24 +5,21 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   FadeIn,
-  FadeInDown,
-  FadeInUp,
   LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
   withTiming,
-  ZoomIn,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Confetti } from '../../components/Confetti';
 import { Pet } from '../../components/Pet';
 import { Ring } from '../../components/Ring';
-import { Bar, Card, Squish, T, tap } from '../../components/ui';
+import { Bar, Card, enter, Squish, T, tap } from '../../components/ui';
 import { WaterGlass } from '../../components/WaterGlass';
 import { addDays, dayKey, formatLitres, fromKey, greeting, prettyDate, WEEKDAY_SHORT, weekOf } from '../../lib/dates';
 import { MEAL_TYPES } from '../../lib/foods';
-import { petLine, petMood } from '../../lib/mood';
+import { goalsMet, petLine, petMood } from '../../lib/mood';
 import { type Meal, useApp, useDayTotals } from '../../store';
 import { colors, radius } from '../../theme';
 
@@ -59,17 +56,29 @@ export default function Home() {
     mealCount.current = { day, n: t.meals.length };
   }, [t.meals.length, day]);
 
+  // consecutive days with both goals hit; today only counts once it's reached, so an
+  // unfinished today doesn't break a streak that ran through yesterday
+  const kcalGoal = plan?.calories ?? 0;
+  const waterGoal = plan?.waterMl ?? 0;
   const streak = useMemo(() => {
-    const active = new Set([...allMeals.map((m) => m.day), ...allWater.map((w) => w.day)]);
+    if (!kcalGoal || !waterGoal) return 0;
+    const kcal = new Map<string, number>();
+    const water = new Map<string, number>();
+    for (const m of allMeals) kcal.set(m.day, (kcal.get(m.day) ?? 0) + m.kcal);
+    for (const w of allWater) water.set(w.day, (water.get(w.day) ?? 0) + w.ml);
+    const won = (d: Date) => {
+      const k = dayKey(d);
+      return goalsMet(kcal.get(k) ?? 0, kcalGoal, water.get(k) ?? 0, waterGoal);
+    };
     let n = 0;
     let d = new Date();
-    if (!active.has(dayKey(d))) d = addDays(d, -1);
-    while (active.has(dayKey(d))) {
+    if (!won(d)) d = addDays(d, -1);
+    while (won(d)) {
       n++;
       d = addDays(d, -1);
     }
     return n;
-  }, [allMeals, allWater]);
+  }, [allMeals, allWater, kcalGoal, waterGoal]);
 
   // plan is cleared by "Start over" while this tab is still mounted
   if (!plan) return null;
@@ -101,7 +110,7 @@ export default function Home() {
         showsVerticalScrollIndicator={false}
       >
         {/* header */}
-        <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
+        <Animated.View entering={enter(0)} style={styles.header}>
           <View style={{ flex: 1 }}>
             <T size={15} color={colors.inkSoft}>
               {greeting()}
@@ -122,7 +131,7 @@ export default function Home() {
         <WeekStrip selected={day} onSelect={setDay} calorieGoal={plan.calories} meals={allMeals} />
 
         {/* pet hero */}
-        <Animated.View entering={FadeInUp.delay(80).springify().damping(14)}>
+        <Animated.View entering={enter(2)}>
           <LinearGradient
             colors={mood === 'thirsty' ? ['#DCEEFF', '#BFE0FF'] : mood === 'sleepy' ? ['#ECE8FF', '#DAD3FF'] : ['#FFE9CF', '#FFD9B0']}
             style={styles.hero}
@@ -131,7 +140,7 @@ export default function Home() {
               <T weight="black" size={13} color={colors.inkSoft} style={{ letterSpacing: 1.2 }}>
                 {petName.toUpperCase()}
               </T>
-              <Animated.View key={mood} entering={ZoomIn.springify().damping(12)} style={styles.bubble}>
+              <Animated.View key={mood} entering={FadeIn.duration(220)} style={styles.bubble}>
                 <T weight="semibold" size={14.5}>
                   {petLine(mood, petName, name ?? '')}
                 </T>
@@ -143,7 +152,7 @@ export default function Home() {
               )}
             </View>
             <Squish
-              scaleTo={0.92}
+              scaleTo={0.96}
               onPress={() => {
                 setBounce((b) => b + 1);
                 tap('medium');
@@ -155,7 +164,7 @@ export default function Home() {
         </Animated.View>
 
         {/* calories */}
-        <Animated.View entering={FadeInUp.delay(140).springify().damping(14)}>
+        <Animated.View entering={enter(3)}>
           <Card style={styles.calCard}>
             <Ring size={150} stroke={14} progress={t.kcal / plan.calories} color={left < 0 ? colors.danger : colors.calories} track={colors.caloriesSoft}>
               <T weight="black" size={30}>
@@ -173,14 +182,14 @@ export default function Home() {
         </Animated.View>
 
         {/* macros */}
-        <Animated.View entering={FadeInUp.delay(200).springify().damping(14)} style={{ flexDirection: 'row', gap: 10 }}>
+        <Animated.View entering={enter(4)} style={{ flexDirection: 'row', gap: 10 }}>
           <Macro label="Protein" value={t.protein} goal={plan.proteinG} color={colors.protein} />
           <Macro label="Carbs" value={t.carbs} goal={plan.carbsG} color={colors.carbs} />
           <Macro label="Fat" value={t.fat} goal={plan.fatG} color={colors.fat} />
         </Animated.View>
 
         {/* hydration */}
-        <Animated.View entering={FadeInUp.delay(260).springify().damping(14)}>
+        <Animated.View entering={enter(5)}>
           <Squish scaleTo={0.98} haptic={false} onPress={() => router.push('/water')}>
             <Card style={styles.waterCard}>
               <WaterGlass width={64} progress={t.waterMl / plan.waterMl} />
@@ -216,7 +225,7 @@ export default function Home() {
         </Animated.View>
 
         {/* meals */}
-        <Animated.View entering={FadeInUp.delay(320).springify().damping(14)} style={{ gap: 10 }}>
+        <Animated.View entering={enter(6)} style={{ gap: 10 }}>
           <T weight="black" size={20} style={{ marginTop: 4 }}>
             Meals
           </T>
@@ -251,7 +260,7 @@ function WeekStrip({
   const days = weekOf(new Date());
   const today = dayKey();
   return (
-    <Animated.View entering={FadeIn.delay(60)} style={styles.week}>
+    <Animated.View entering={enter(1)} style={styles.week}>
       {days.map((d, i) => {
         const k = dayKey(d);
         const sel = k === selected;
@@ -343,7 +352,7 @@ function MealSection({
         </Squish>
       </View>
       {meals.map((m) => (
-        <Animated.View key={m.id} entering={FadeInDown.springify()} layout={LinearTransition} style={styles.mealItem}>
+        <Animated.View key={m.id} entering={FadeIn.duration(220)} layout={LinearTransition} style={styles.mealItem}>
           <T size={18}>{m.emoji}</T>
           <View style={{ flex: 1 }}>
             <T weight="semibold" size={14.5} numberOfLines={1}>

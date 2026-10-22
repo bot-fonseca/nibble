@@ -39,7 +39,7 @@ export function WaterPop({
       delay,
       withSequence(
         withTiming(size * 0.6, { duration: 250 }),
-        withSpring(0, { damping: 9, stiffness: 120 }),
+        withSpring(0, { damping: 15, stiffness: 120 }),
       ),
     );
     splash.value = withDelay(delay + 280, withTiming(1, { duration: 700, easing: Easing.out(Easing.quad) }));

@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -11,6 +11,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Animated, {
+  Easing,
+  FadeIn,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
@@ -18,6 +20,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { colors, fonts, radius, shadow } from '../theme';
+
+/** Calm entrance for screen sections: a short fade, lightly staggered by position. */
+export const enter = (i = 0) => FadeIn.duration(260).delay(i * 40);
 
 export function tap(kind: 'light' | 'medium' | 'success' = 'light') {
   if (Platform.OS === 'web') return;
@@ -210,14 +215,19 @@ export function Bar({
   height?: number;
   track?: string;
 }) {
-  const w = useSharedValue(0);
+  const [trackW, setTrackW] = useState(0);
+  const p = useSharedValue(0);
   useEffect(() => {
-    w.value = withSpring(Math.max(0, Math.min(1, value)), { damping: 18, stiffness: 120 });
+    p.value = withTiming(Math.max(0, Math.min(1, value)), { duration: 550, easing: Easing.out(Easing.cubic) });
   }, [value]);
-  const a = useAnimatedStyle(() => ({ width: `${w.value * 100}%` }));
+  // slide a full-width fill in from the left: transform-only, so it stays smooth on the UI thread
+  const a = useAnimatedStyle(() => ({ transform: [{ translateX: -trackW * (1 - p.value) }] }));
   return (
-    <View style={{ height, borderRadius: height, backgroundColor: track, overflow: 'hidden' }}>
-      <Animated.View style={[{ height, borderRadius: height, backgroundColor: color }, a]} />
+    <View
+      onLayout={(e) => setTrackW(e.nativeEvent.layout.width)}
+      style={{ height, borderRadius: height, backgroundColor: track, overflow: 'hidden' }}
+    >
+      <Animated.View style={[{ width: trackW, height, borderRadius: height, backgroundColor: color }, a]} />
     </View>
   );
 }

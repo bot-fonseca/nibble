@@ -2,9 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Card, Chip, Squish, T, tap } from '../components/ui';
+import { Button, Card, Chip, enter, Squish, T, tap } from '../components/ui';
 import { dayKey } from '../lib/dates';
 import { defaultMealType, MEAL_TYPES, QUICK_FOODS, type QuickFood } from '../lib/foods';
 import { type MealType, useApp } from '../store';
@@ -74,7 +74,7 @@ export default function LogMeal() {
           ))}
         </ScrollView>
 
-        <Animated.View entering={FadeInDown.delay(60)}>
+        <Animated.View entering={enter(1)}>
           <Card style={styles.scan}>
             <View style={styles.scanIcon}>
               <Ionicons name="camera" size={26} color={colors.white} />
@@ -118,7 +118,7 @@ export default function LogMeal() {
               />
             </View>
             {foods.map((f, i) => (
-              <Animated.View key={f.name} entering={FadeInUp.delay(Math.min(i, 8) * 35)}>
+              <Animated.View key={f.name} entering={enter(Math.min(i, 6))}>
                 <Squish onPress={() => logQuick(f)} scaleTo={0.97}>
                   <Card style={styles.food}>
                     <View style={styles.foodEmoji}>

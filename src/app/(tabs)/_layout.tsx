@@ -39,14 +39,17 @@ function TabBar({ state, navigateToTab }: BottomTabBarProps) {
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={styles.bar}>
-        {items[0]}
-        {items[1]}
+        {/* equal halves either side of a fixed slot keep the + exactly centred */}
+        <View style={styles.side}>
+          {items[0]}
+          {items[1]}
+        </View>
         <Squish style={styles.fabWrap} scaleTo={0.9} onPress={() => router.push('/log-meal')}>
           <View style={styles.fab}>
             <Ionicons name="add" size={32} color={colors.white} />
           </View>
         </Squish>
-        {items[2]}
+        <View style={styles.side}>{items[2]}</View>
       </View>
     </View>
   );
@@ -74,8 +77,9 @@ const styles = StyleSheet.create({
     ...shadow,
     shadowOpacity: 0.14,
   },
+  side: { flex: 1, flexDirection: 'row', height: '100%' },
   item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, height: '100%' },
-  fabWrap: { flex: 1, alignItems: 'center' },
+  fabWrap: { width: 76, alignItems: 'center' },
   fab: {
     width: 58,
     height: 58,
