@@ -53,6 +53,9 @@
           "recordAudioAndroid": false
         }
       ]
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
