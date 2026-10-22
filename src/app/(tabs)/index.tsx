@@ -21,7 +21,7 @@ import { dayKey, formatLitres, fromKey, greeting, prettyDate, WEEKDAY_SHORT, wee
 import { MEAL_TYPES } from '../../lib/foods';
 import { petLine, petMood } from '../../lib/mood';
 import { useStreak } from '../../lib/streak';
-import { type Meal, useApp, useDayTotals } from '../../store';
+import { favoriteKey, type Meal, useApp, useDayTotals } from '../../store';
 import { colors, radius, themed } from '../../theme';
 
 export default function Home() {
@@ -320,6 +320,9 @@ function MealSection({
   onRemove: (id: string) => void;
 }) {
   const kcal = meals.reduce((a, m) => a + m.kcal, 0);
+  const favorites = useApp((s) => s.favorites);
+  const toggleFavorite = useApp((s) => s.toggleFavorite);
+  const favKeys = new Set(favorites.map(favoriteKey));
   return (
     <Card style={{ padding: 14 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -352,6 +355,13 @@ function MealSection({
           <T weight="bold" size={14}>
             {m.kcal}
           </T>
+          <Squish onPress={() => toggleFavorite(m)} style={{ padding: 4 }}>
+            <Ionicons
+              name={favKeys.has(favoriteKey(m)) ? 'star' : 'star-outline'}
+              size={19}
+              color={favKeys.has(favoriteKey(m)) ? colors.carbs : colors.inkFaint}
+            />
+          </Squish>
           <Squish onPress={() => onRemove(m.id)} style={{ padding: 4 }}>
             <Ionicons name="close-circle" size={20} color={colors.inkFaint} />
           </Squish>

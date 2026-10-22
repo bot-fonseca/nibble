@@ -20,6 +20,21 @@ export interface Meal {
   fat: number;
 }
 
+/** A meal saved for one-tap logging. */
+export interface FavoriteMeal {
+  id: string;
+  name: string;
+  emoji: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+/** Identifies a meal by its content, so the same meal is never saved twice. */
+export const favoriteKey = (m: Omit<FavoriteMeal, 'id'>) =>
+  `${m.name.trim().toLowerCase()}|${m.kcal}|${m.protein}|${m.carbs}|${m.fat}`;
+
 export interface WaterEntry {
   id: string;
   day: string;
@@ -52,6 +67,7 @@ interface State {
   meals: Meal[];
   water: WaterEntry[];
   weights: WeightEntry[];
+  favorites: FavoriteMeal[];
   /** 🎋 currency earned from quests and streak milestones. */
   bamboo: number;
   /** Keys of rewards already paid out, so each one is only earned once. */
@@ -75,6 +91,9 @@ interface State {
   removeWater: (id: string) => void;
   /** Logs today's weight, replacing an earlier entry from the same day. */
   logWeight: (kg: number) => void;
+  /** Saves a meal as a favorite, or removes it if it's already one. */
+  toggleFavorite: (m: Omit<FavoriteMeal, 'id'>) => void;
+  removeFavorite: (id: string) => void;
   /** Pays out the rewards whose keys haven't been claimed yet. */
   claimRewards: (items: { key: string; amount: number }[]) => void;
   /** Returns false when there isn't enough bamboo or the item can't be bought. */
@@ -102,6 +121,7 @@ const initial = {
   meals: [] as Meal[],
   water: [] as WaterEntry[],
   weights: [] as WeightEntry[],
+  favorites: [] as FavoriteMeal[],
   bamboo: 0,
   rewards: [] as string[],
   freezes: 0,
@@ -146,6 +166,19 @@ export const useApp = create<State>()(
           const day = dayKey();
           return { weights: [...s.weights.filter((w) => w.day !== day), { id: uid(), day, at: Date.now(), kg }] };
         }),
+
+      toggleFavorite: (m) =>
+        set((s) => {
+          const key = favoriteKey(m);
+          const exists = s.favorites.some((f) => favoriteKey(f) === key);
+          const { name, emoji, kcal, protein, carbs, fat } = m;
+          return {
+            favorites: exists
+              ? s.favorites.filter((f) => favoriteKey(f) !== key)
+              : [...s.favorites, { id: uid(), name: name.trim(), emoji, kcal, protein, carbs, fat }],
+          };
+        }),
+      removeFavorite: (id) => set((s) => ({ favorites: s.favorites.filter((f) => f.id !== id) })),
 
       claimRewards: (items) =>
         set((s) => {

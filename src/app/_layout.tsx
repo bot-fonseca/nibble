@@ -50,6 +50,7 @@ export default function RootLayout() {
           <Stack.Screen name="log-meal" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="streak" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="shop" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
         </Stack.Protected>
         <Stack.Protected guard={!onboarded} redirectTo="/">
           <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />

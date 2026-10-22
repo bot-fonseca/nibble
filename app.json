@@ -20,7 +20,10 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "permissions": ["android.permission.POST_NOTIFICATIONS", "android.permission.SCHEDULE_EXACT_ALARM"],
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -41,6 +44,13 @@
         "expo-notifications",
         {
           "color": "#1FA79A"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Nibble to use your camera to scan food barcodes.",
+          "recordAudioAndroid": false
         }
       ]
     ]
