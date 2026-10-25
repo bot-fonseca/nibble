@@ -15,7 +15,7 @@
     "android": {
       "package": "com.andre.nibble",
       "adaptiveIcon": {
-        "backgroundColor": "#FFF8EE",
+        "backgroundColor": "#FFF1DE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -23,15 +23,16 @@
       "permissions": [
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.SCHEDULE_EXACT_ALARM",
-        "android.permission.CAMERA",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.SCHEDULE_EXACT_ALARM",
         "android.permission.CAMERA"
       ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "Nibble",
+      "shortName": "Nibble",
+      "themeColor": "#FFF8EE",
+      "backgroundColor": "#FFF8EE"
     },
     "plugins": [
       "expo-router",

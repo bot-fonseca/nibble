@@ -49,6 +49,22 @@ npx eas-cli@latest build -p android --profile preview
 ```
 EAS builds in the cloud and gives you a link to download the `.apk`.
 
+## iPhone: web version on GitHub Pages (free)
+
+The same app is exported as a website you can add to the iPhone Home Screen. Everything works except hydration **reminders** (a website can't schedule local notifications), so the reminders step and settings are hidden there.
+
+**Deploy (automatic):** `.github/workflows/deploy-web.yml` builds and publishes on every push to `main`.
+1. Push the project to GitHub (see below).
+2. On GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+3. Go to **Actions**, open "Deploy web app to GitHub Pages" and click **Run workflow** (or just push).
+4. The site appears at `https://<your-username>.github.io/<repo-name>/`.
+
+> GitHub Pages on a **private** repo needs GitHub Pro (free for students through the GitHub Student Developer Pack). On a free account, make the repo public or deploy from a separate public repo.
+
+**Install on iPhone:** open the link in **Safari** → Share → **Add to Home Screen**. It opens full screen with the red panda icon. Data is saved on that iPhone only.
+
+**Build locally:** `EXPO_BASE_URL=/nibble npm run build:web` → output in `dist/` (use the repo name as the base path; leave it empty to host at a domain root).
+
 ## Push to a private GitHub repo
 
 The project already has a git history. From this folder:

@@ -8,6 +8,7 @@ import { MiniStepper, RemindersEditor } from '../../components/RemindersEditor';
 import { Button, Card, Chip, enter, T } from '../../components/ui';
 import { formatLitres } from '../../lib/dates';
 import { requestNotificationPermission } from '../../lib/notifications';
+import { IS_WEB } from '../../lib/platform';
 import { useApp } from '../../store';
 import { colors, fonts, radius, THEMES, themed } from '../../theme';
 
@@ -106,13 +107,22 @@ export default function Settings() {
       </Section>
 
       <Section title="Reminders">
-        <RemindersEditor
-          value={reminders}
-          onChange={(r) => {
-            setReminders(r);
-            if (r.enabled && !reminders.enabled) requestNotificationPermission();
-          }}
-        />
+        {IS_WEB ? (
+          <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <T size={22}>🔔</T>
+            <T size={14} color={colors.inkSoft} style={{ flex: 1 }}>
+              Hydration reminders are only available in the Android app. On this version, use the quick-add buttons on Home.
+            </T>
+          </Card>
+        ) : (
+          <RemindersEditor
+            value={reminders}
+            onChange={(r) => {
+              setReminders(r);
+              if (r.enabled && !reminders.enabled) requestNotificationPermission();
+            }}
+          />
+        )}
       </Section>
 
       <Section title="Theme">

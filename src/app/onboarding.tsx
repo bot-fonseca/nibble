@@ -31,6 +31,7 @@ import { WaterGlass } from '../components/WaterGlass';
 import { WaterPop } from '../components/WaterPop';
 import { formatLitres, MONTHS } from '../lib/dates';
 import { requestNotificationPermission } from '../lib/notifications';
+import { IS_WEB } from '../lib/platform';
 import {
   type Activity,
   bmi,
@@ -73,7 +74,7 @@ const OBSTACLES = [
   { key: 'schedule', label: 'Busy, irregular days', emoji: '📆', tip: 'Your plan is daily, not hourly. Catch up anytime.' },
   { key: 'eatingOut', label: 'Eating out a lot', emoji: '🍔', tip: 'Quick estimates beat perfect numbers.' },
   { key: 'motivation', label: 'Staying motivated', emoji: '🔥', tip: 'Your pal cheers you on and keeps a streak.' },
-  { key: 'water', label: 'Forgetting to drink water', emoji: '💧', tip: 'Gentle reminders until you hit your goal.' },
+  { key: 'water', label: 'Forgetting to drink water', emoji: '💧', tip: IS_WEB ? 'One tap logs a glass, and your pal gets thirsty when you fall behind.' : 'Gentle reminders until you hit your goal.' },
 ];
 
 const PET_NAMES = ['Momo', 'Maple', 'Ember', 'Mochi', 'Biscuit', 'Noodle'];
@@ -130,7 +131,7 @@ export default function Onboarding() {
       'obstaclesTips',
       'waterHabit',
       'waterGoal',
-      'reminders',
+      ...(IS_WEB ? [] : (['reminders'] as StepKey[])),
       'adopt',
       'building',
       'plan',
@@ -163,7 +164,7 @@ export default function Onboarding() {
 
   const complete = () => {
     tap('success');
-    if (reminders.enabled) requestNotificationPermission().catch(() => {});
+    if (reminders.enabled && !IS_WEB) requestNotificationPermission().catch(() => {});
     finish({
       profile: { ...profile, name: profile.name.trim() },
       plan,
@@ -874,7 +875,7 @@ function PlanReady({
                 {formatLitres(plan.waterMl)} of water
               </T>
               <T size={13.5} color={colors.inkSoft}>
-                every day, with reminders to keep {petName} splashing
+                {IS_WEB ? `every day, to keep ${petName} splashing` : `every day, with reminders to keep ${petName} splashing`}
               </T>
             </View>
           </Card>

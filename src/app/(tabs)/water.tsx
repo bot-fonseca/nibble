@@ -8,6 +8,7 @@ import { Card, enter, Squish, T, tap } from '../../components/ui';
 import { WaterGlass } from '../../components/WaterGlass';
 import { addDays, dayKey, formatLitres, formatTime, WEEKDAY_SHORT } from '../../lib/dates';
 import { reminderSlots } from '../../lib/notifications';
+import { IS_WEB } from '../../lib/platform';
 import { useApp, useDayTotals, waterOn } from '../../store';
 import { colors, fonts, radius, themed } from '../../theme';
 
@@ -167,24 +168,26 @@ export default function Water() {
         </View>
       </Card>
 
-      {/* reminders summary */}
-      <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <T size={24}>🔔</T>
-        <View style={{ flex: 1 }}>
-          <T weight="bold" size={15}>
-            {reminders.enabled ? 'Reminders on' : 'Reminders off'}
-          </T>
-          <T size={13} color={colors.inkSoft}>
-            {!reminders.enabled
-              ? 'Turn them on in the You tab'
-              : reached
-                ? 'Paused for today — goal reached'
-                : nextSlot !== undefined
-                  ? `Next nudge at ${String(Math.floor(nextSlot / 60)).padStart(2, '0')}:${String(nextSlot % 60).padStart(2, '0')}`
-                  : 'Done for today — see you tomorrow'}
-          </T>
-        </View>
-      </Card>
+      {/* reminders summary (phone app only: the web version can't schedule notifications) */}
+      {!IS_WEB && (
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T size={24}>🔔</T>
+          <View style={{ flex: 1 }}>
+            <T weight="bold" size={15}>
+              {reminders.enabled ? 'Reminders on' : 'Reminders off'}
+            </T>
+            <T size={13} color={colors.inkSoft}>
+              {!reminders.enabled
+                ? 'Turn them on in the You tab'
+                : reached
+                  ? 'Paused for today — goal reached'
+                  : nextSlot !== undefined
+                    ? `Next nudge at ${String(Math.floor(nextSlot / 60)).padStart(2, '0')}:${String(nextSlot % 60).padStart(2, '0')}`
+                    : 'Done for today — see you tomorrow'}
+            </T>
+          </View>
+        </Card>
+      )}
 
       {/* log */}
       <Animated.View layout={LinearTransition} style={{ gap: 8 }}>
