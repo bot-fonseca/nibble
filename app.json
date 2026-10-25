@@ -35,7 +35,14 @@
       "backgroundColor": "#FFF8EE"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "asyncRoutes": {
+            "web": false
+          }
+        }
+      ],
       "expo-font",
       [
         "expo-splash-screen",
@@ -63,11 +70,6 @@
       "policy": "appVersion"
     },
     "extra": {
-      "router": {
-        "asyncRoutes": {
-          "web": true
-        }
-      },
       "eas": {
         "projectId": "07ec6b20-e64c-47e4-a4d7-82a037f46be6"
       }

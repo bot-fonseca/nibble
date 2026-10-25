@@ -8,7 +8,8 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated';
 import { RewardToast } from '../components/RewardToast';
@@ -20,11 +21,20 @@ import { applyTheme, colors } from '../theme';
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Nunito_500Medium, Nunito_700Bold, Nunito_800ExtraBold, Nunito_900Black });
+  const [fontsLoaded, fontError] = useFonts({ Nunito_500Medium, Nunito_700Bold, Nunito_800ExtraBold, Nunito_900Black });
   const hydrated = useApp((s) => s.hydrated);
+  // Safari (especially home-screen apps) sometimes never reports the web font as loaded, which left
+  // the screen blank. On web, stop waiting after a moment: text shows in the system font and swaps
+  // to Nunito as soon as it arrives.
+  const [fontWaitOver, setFontWaitOver] = useState(Platform.OS !== 'web');
+  useEffect(() => {
+    if (fontWaitOver) return;
+    const t = setTimeout(() => setFontWaitOver(true), 2500);
+    return () => clearTimeout(t);
+  }, [fontWaitOver]);
   const onboarded = useApp((s) => s.onboarded);
   const theme = useApp((s) => s.theme);
-  const ready = fontsLoaded && hydrated;
+  const ready = (fontsLoaded || !!fontError || fontWaitOver) && hydrated;
 
   useReminderSync();
   useRewards();
